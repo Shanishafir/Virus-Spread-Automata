@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 #include <tuple>
+#include <sstream>
 
 using namespace std;
 
@@ -24,7 +25,8 @@ struct matrixData{
 
 matrixData adjMat[200][200];
 int sickCounter = 0;
-
+int healthyCounter = 0;
+int immuneCounter = 0;
 tuple<int, int> getRandomCoordinates();
 
 
@@ -35,7 +37,6 @@ public:
     Person(tuple<int, int> coor, int speed): location(coor), speed(speed){};
     std::vector<std::tuple<int, int>> getNeighbours(int radius);
     virtual void nextIteration(int index)=0;
-    virtual ~Person() = default;
 };
 
 class HealthyPerson : public Person {
@@ -48,7 +49,6 @@ public:
         adjMat[x][y].isHealthy = true;
     };
     void nextIteration(int index) override;
-    ~HealthyPerson() override = default;
 
 };
 
@@ -61,7 +61,6 @@ public:
         adjMat[x][y].person = this;
         adjMat[x][y].isOccupied = true;
         adjMat[x][y].isSick = true;
-        sickCounter++;
     };
     SickPerson(tuple<int, int> coor, int speed, int gen): Person(coor, speed), generation(gen) {
         int x = get<0>(coor);
@@ -71,7 +70,6 @@ public:
         adjMat[x][y].isSick = true;
     };
     void nextIteration(int index) override;
-    ~SickPerson() override = default;
 };
 
 class ImmunePerson : public Person {
@@ -84,7 +82,6 @@ public:
         adjMat[x][y].isImmune = true;
     };
     void nextIteration(int index) override;
-    ~ImmunePerson() override = default;
 
 };
 
