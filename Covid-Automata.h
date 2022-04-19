@@ -1,6 +1,4 @@
-//
-// Created by shani on 11/04/2022.
-//
+
 
 #ifndef BIOINFORMATICS1_COVID_AUTOMATA_H
 #define BIOINFORMATICS1_COVID_AUTOMATA_H
@@ -10,13 +8,21 @@
 #include <vector>
 #include <tuple>
 #include <sstream>
+#include <stdlib.h>
+#include <string>
+#if defined _WIN32
+#include "windows.h"
+#elif defined (__LINUX__) || defined(__gnu_linux__) || defined(__linux__)
+#endif
+#include <unistd.h>
+#include <fstream>
 
 using namespace std;
 
-class Person;
+class Cell;
 
-struct matrixData{
-    Person* person = nullptr;
+struct matrixData {
+    Cell* cell = nullptr;
     bool isOccupied = false;
     bool isHealthy = false;
     bool isSick = false;
@@ -24,27 +30,25 @@ struct matrixData{
 };
 
 matrixData adjMat[200][200];
-int sickCounter = 0;
-int healthyCounter = 0;
-int immuneCounter = 0;
+
 tuple<int, int> getRandomCoordinates();
 
 
-class Person {
+class Cell {
 public:
     tuple<int, int> location;
     int speed;
-    Person(tuple<int, int> coor, int speed): location(coor), speed(speed){};
+    Cell(tuple<int, int> coor, int speed): location(coor), speed(speed){};
     std::vector<std::tuple<int, int>> getNeighbours(int radius);
     virtual void nextIteration(int index)=0;
 };
 
-class HealthyPerson : public Person {
+class HealthyCell : public Cell {
 public:
-    HealthyPerson(tuple<int, int> coor, int speed): Person(coor, speed) {
+    HealthyCell(tuple<int, int> coor, int speed): Cell(coor, speed) {
         int x = get<0>(coor);
         int y = get<1>(coor);
-        adjMat[x][y].person = this;
+        adjMat[x][y].cell = this;
         adjMat[x][y].isOccupied = true;
         adjMat[x][y].isHealthy = true;
     };
@@ -52,38 +56,42 @@ public:
 
 };
 
-class SickPerson : public Person{
+class SickCell : public Cell{
     int generation = 1;
 public:
-    SickPerson(tuple<int, int> coor, int speed): Person(coor, speed) {
+    SickCell(tuple<int, int> coor, int speed): Cell(coor, speed) {
         int x = get<0>(coor);
         int y = get<1>(coor);
-        adjMat[x][y].person = this;
+        adjMat[x][y].cell = this;
         adjMat[x][y].isOccupied = true;
         adjMat[x][y].isSick = true;
     };
-    SickPerson(tuple<int, int> coor, int speed, int gen): Person(coor, speed), generation(gen) {
+    SickCell(tuple<int, int> coor, int speed, int gen): Cell(coor, speed), generation(gen) {
         int x = get<0>(coor);
         int y = get<1>(coor);
-        adjMat[x][y].person = this;
+        adjMat[x][y].cell = this;
         adjMat[x][y].isOccupied = true;
         adjMat[x][y].isSick = true;
     };
     void nextIteration(int index) override;
 };
 
-class ImmunePerson : public Person {
+class ImmuneCell : public Cell {
 public:
-    ImmunePerson(tuple<int, int> coor, int speed): Person(coor, speed) {
+    ImmuneCell(tuple<int, int> coor, int speed): Cell(coor, speed) {
         int x = get<0>(coor);
         int y = get<1>(coor);
-        adjMat[x][y].person = this;
+        adjMat[x][y].cell = this;
         adjMat[x][y].isOccupied = true;
         adjMat[x][y].isImmune = true;
     };
     void nextIteration(int index) override;
 
 };
+
+// Output functions
+void clear();
+void printMatrix(matrixData adjMat[200][200]);
 
 
 #endif //BIOINFORMATICS1_COVID_AUTOMATA_H

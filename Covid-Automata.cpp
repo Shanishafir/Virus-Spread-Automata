@@ -1,22 +1,38 @@
 #include <iostream>
 #include "Covid-Automata.h"
 
+
+
+
 int N; //10000
 double D = 0.05; //0.05
 double R = 0.01; //0.01
 int X = 4; //4
-int P1 = 40; //40      // Probabilty (percentage) of people getting sick when not taking care
-int P2 = 10; //10      // Probabilty (percentage) of people getting sick when taking care
+int P1 = 40; //40      // Probability (percentage) of people getting sick when not taking care
+int P2 = 10; //10      // Probability (percentage) of people getting sick when taking care
 int T; // 0.1 * N      // P1 to P2 threshold
 
-vector<Person*> personArr;
+int sickNumberTemp;    // Will store mid-iteration sick number of each iteration.
+int sickCounter = 0;
+int healthyCounter = 0;
+int immuneCounter = 0;
 
+std::random_device rd;
+
+vector<Cell*> cellArr; // vector that will store pointers to all occupied cells.
+
+/**
+ * Checks for free cells on the grid, returns a random (x, y) coordinate as a tuple.
+ * @return
+ */
 tuple<int, int> getRandomCoordinates() {
     int x;
     int y;
+    std::uniform_int_distribution<int> distribution(0, 199);
+    std::mt19937 engine(rd()); // Mersenne twister MT19937
     while (true) {
-        x = rand() % 200;
-        y = rand() % 200;
+        x = distribution(engine);
+        y = distribution(engine);
         if (!adjMat[x][y].isOccupied) {
             break;
         }
@@ -25,23 +41,23 @@ tuple<int, int> getRandomCoordinates() {
 }
 
 /*
- * Rolls whether a person is sick in the next iteration
+ * Rolls whether a cell is sick in the next iteration
+ * Uses
  */
-bool amISick(Person* person) {
-    std::random_device rd;
+bool amISick(Cell* cell) {
+    // Create a uniform distribution number generator
     std::uniform_int_distribution<int> distribution(1, 100);
     std::mt19937 engine(rd()); // Mersenne twister MT19937
-
     int value=distribution(engine);
 
-    auto neighbors = person->getNeighbours(0);
+    auto neighbors = cell->getNeighbours(0);
     int probability = 0;
     // Sick amount is below threshold
     if (sickCounter < T) {
         for (auto neighbor : neighbors) {
             int x = get<0>(neighbor);
             int y = get<1>(neighbor);
-            if (adjMat[x][y].isSick) {
+            if (adjMat[x][y].isOccupied && adjMat[x][y].isSick) {
                 probability += P1;
             }
         }
@@ -49,7 +65,7 @@ bool amISick(Person* person) {
         for (auto neighbor : neighbors) {
             int x = get<0>(neighbor);
             int y = get<1>(neighbor);
-            if (adjMat[x][y].isSick) {
+            if (adjMat[x][y].isOccupied && adjMat[x][y].isSick) {
                 probability += P2;
             }
         }
@@ -57,17 +73,23 @@ bool amISick(Person* person) {
     if (probability >= 100)
         return true;
     else
-        return value < probability;
+        return value < probability; // will be sick probability/100 times.
 }
 
 /**
- * Returns a random neighbor from neighbor matrix(including own position)
+ * This function ensures that each cell will only travel to an unoccupied cell in the following generation.
+ * Selects a random neighbor coordinate from the surrounding cells(either neighbours with distance of 1, or neighbors
+ * with distance of 10, depending on the cell, including the cell itself.)
+ * Will select a cell from non occupied cells only
  * @param allNeighborCoor Vector containing tuples
  * @param selfCoord tuple representing current point's coordinates
  * @return new coordinates
  */
 tuple<int,int> chooseRandomNeighbor(vector<tuple<int, int>> allNeighborCoor,
                                     tuple<int, int> selfCoord) {
+    // Create a uniform distribution number generator
+
+
     vector<tuple<int, int>> freeSpaces;
     freeSpaces.push_back(selfCoord);
     int i = 1;
@@ -75,35 +97,45 @@ tuple<int,int> chooseRandomNeighbor(vector<tuple<int, int>> allNeighborCoor,
         int x = get<0>(neighborCoor);
         int y = get<1>(neighborCoor);
         if (!adjMat[x][y].isOccupied) {
-            ++i;
+            ++i; // holds number of free cells
             freeSpaces.push_back(neighborCoor);
         }
     }
-    // choose a new coordinate.
-    int choice = rand() % i;
+    std::uniform_int_distribution<int> distribution(0, i - 1);
+    std::mt19937 engine(rd()); // Mersenne twister MT19937
+    int choice = distribution(engine);
     return freeSpaces.at(choice);
 }
 
+/**
+ * Clears all the flags of the requested cell.
+ * @param x row number
+ * @param y column number
+ */
 void freeCell(int x, int y) {
     adjMat[x][y].isOccupied = false;
     adjMat[x][y].isSick = false;
     adjMat[x][y].isHealthy = false;
     adjMat[x][y].isImmune = false;
-    adjMat[x][y].person = nullptr;
+    adjMat[x][y].cell = nullptr;
 }
 
 /**
  * Read and initialize automata parameters from user
  */
 void getParams() {
-    cout << "====Viral Spread Automata====" << endl << endl;
+    cout << "=========================================Viral Spread Automata=========================================" <<
+    endl << endl << endl <<
+    "\033[1;41;37mNOTE: it is highly recommended to set the terminal font to 5 or lower after parameter setup,\n"
+                    "in order to better see the whole simulation.\033[0m"  << endl << endl;
+
     while(true) {
-        cout << "Enter desired number of cells, maximum of 40000 [Default = 15000]: ";
+        cout << "Enter desired number of cells, maximum of 40000 [Default = 30000]: ";
         //check if next character is newline
         if (cin.peek() == '\n') {
             cin.clear();
             cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            N = 15000;
+            N = 30000;
             break;
         } else if (!(std::cin >> N) || N > 40000 || N < 2) {
             cin.clear();
@@ -116,12 +148,12 @@ void getParams() {
         }
     }
     while(true) {
-        cout << "Enter fraction of sick cells, number between 0.0-1.0 [Default = 0.05]: ";
+        cout << "Enter fraction of sick cells, number between 0.0-1.0 [Default = 0.002]: ";
         //check if next character is newline
         if (cin.peek() == '\n') {
             cin.clear();
             cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            D = 0.05;
+            D = 0.002;
             break;
         } else if (!(std::cin >> D) || (D > 1.0 || D < 0.0)) {
             cin.clear();
@@ -152,12 +184,12 @@ void getParams() {
         }
     }
     while(true) {
-        cout << "Enter number of generation until a sick cell stops infecting[Default = 4]: ";
+        cout << "Enter number of generation until a sick cell stops infecting [Default = 2]: ";
         //check if next character is newline
         if (cin.peek() == '\n') {
             cin.clear();
             cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            X = 4;
+            X = 2;
             break;
         } else if (!(std::cin >> X) || (X < 1)) {
             cin.clear();
@@ -170,12 +202,12 @@ void getParams() {
         }
     }
     while(true) {
-        cout << "Enter percentage(1 - 100) of getting sick when number of sick cells is low [Default = 40]: ";
+        cout << "Enter probability of infection in percents(1 - 100) when number of sick cells is low [Default = 60]: ";
         //check if next character is newline
         if (cin.peek() == '\n') {
             cin.clear();
             cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            P1 = 40;
+            P1 = 60;
             break;
         } else if (!(std::cin >> P1) || (P1 < 1 || P1 > 100)) {
             cin.clear();
@@ -188,12 +220,12 @@ void getParams() {
         }
     }
     while(true) {
-        cout << "Enter percentage(1 - 100) of getting sick when number of sick cells is high [Default = 10]: ";
+        cout << "Enter probability of infection in percents(1 - 100) when number of sick high [Default = 5]: ";
         //check if next character is newline
         if (cin.peek() == '\n') {
             cin.clear();
             cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            P2 = 10;
+            P2 = 5;
             break;
         } else if (!(std::cin >> P2) || (P2 < 1 || P2 > 100)) {
             cin.clear();
@@ -225,6 +257,12 @@ void getParams() {
             break;
         }
     }
+    cout << endl << "Parameters initialized! press Enter to start the simulation.";
+    if (cin.peek() == '\n') {
+        cin.clear();
+        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        return;
+    }
 }
 
 /**
@@ -242,63 +280,85 @@ void initialize() {
     for (i; i < numHealthy; ++i) {
         auto coor = getRandomCoordinates();
         if (i > fastHealthy) {
-            personArr.push_back(new HealthyPerson(coor, 0));
+            cellArr.push_back(new HealthyCell(coor, 0));
         } else {
-            personArr.push_back(new HealthyPerson(coor, 9));
+            cellArr.push_back(new HealthyCell(coor, 9));
         }
     }
     healthyCounter = numHealthy; // initial number of healthy
     int numSick = N - numHealthy;
     sickCounter = numSick; // initial counter of sick
     // Loop initializing sick
-    auto coor = getRandomCoordinates();
     for (j; j < numSick; ++j) {
+        auto coor = getRandomCoordinates();
         if (j > fastSick) {
-            personArr.push_back(new SickPerson(coor, 0));
+            cellArr.push_back(new SickCell(coor, 0));
         } else {
-            personArr.push_back(new SickPerson(coor, 9));
+            cellArr.push_back(new SickCell(coor, 9));
         }
     }
 }
 
-// Deletes person vector from memory
-void clearMemory(vector<Person*> personArray) {
-    for (Person* person: personArray) {
-        delete person;
+// Deletes cell vector from memory
+void clearMemory(vector<Cell*> cellArray) {
+    for (Cell* cell: cellArray) {
+        delete cell;
     }
 }
 
 void execute() {
+    clear();
     getParams();
     initialize();
     int iteration = 1000;
     int i = 0;
     int j = 0;
-    cout << "Healthy,Sick,Immune" << endl;
+    std::ofstream outputFile("results.csv");
+    outputFile << "Healthy,Sick,Immune" << endl;
     for (i; i < iteration; ++i) {
         j = 0;
-        cout << healthyCounter << "," << sickCounter << "," << immuneCounter << endl;
-        for (auto person : personArr) {
-            person -> nextIteration(j);
-            ++j;
-        }
+        clear();
+        cout << "\033[3;43;30mIteration\033[0m ";
+        printf("\033[3;43;30m%d\033[0m\n", i);
+        printMatrix(adjMat);
+        sickNumberTemp = sickCounter;
+
+        //cout << healthyCounter << "," << sickCounter << "," << immuneCounter << endl;
+        outputFile << healthyCounter << "," << sickCounter << "," << immuneCounter << endl;
+
+        if (sickCounter > 0) {
+            // Iterate over each and every cell in the cell vector, advancing one cell at a time,
+            // and ensuring that there will be no cell overlapping.
+            for (auto cell : cellArr) {
+                cell -> nextIteration(j);
+                ++j;
+            }
+        } else
+            break;
+        sickCounter = sickNumberTemp; // update sickCounter with new value
     }
+    outputFile.close();
+    cout << endl << "Results were written to results.csv" << endl;
 }
 
 
 int main() {
-    srand (time(NULL));
-
+    srand(time(NULL));
     execute();
-    clearMemory(personArr);
+    clearMemory(cellArr);
 }
 
+
+/*****************************************************************************
+ ****************************** Object Functions *****************************
+ *****************************************************************************/
+
 /**
- * Returns the neighbor coordinates of the current person
+ * Returns a vector containing neighbor coordinates for the current cell
  * @param radius proximity to neighbors
  * @return tuple
  */
-std::vector<std::tuple<int, int>> Person::getNeighbours(int radius) {
+std::vector<std::tuple<int, int>> Cell::getNeighbours(int radius) {
     std::vector<std::tuple<int, int>> output;
     int x = get<0>(location);
     int y = get<1>(location);
@@ -389,9 +449,7 @@ std::vector<std::tuple<int, int>> Person::getNeighbours(int radius) {
             output.push_back(tuple<int, int>(x - 199 + radius, y + 1 + radius));        // 8
             return output;
         }
-
     }
-
     // only left is wrapping
     else if (y <= radius  && y >= 0) {
         output.push_back(tuple<int, int>(x - 1 - radius, 199 - radius + y));      // 1
@@ -421,8 +479,11 @@ std::vector<std::tuple<int, int>> Person::getNeighbours(int radius) {
 }
 
 
-
-void HealthyPerson::nextIteration(int index) {
+/**
+ * Performs one iteration step for the healthy cell that was called from.
+ * @param index
+ */
+void HealthyCell::nextIteration(int index) {
     int x = get<0>(location);
     int y = get<1>(location);
 
@@ -434,18 +495,18 @@ void HealthyPerson::nextIteration(int index) {
     freeCell(x, y);
     // create a new Healthy cell
     if (!sickNextIteration) {
-        personArr.at(index) = new HealthyPerson(newSpace, speed);
+        cellArr.at(index) = new HealthyCell(newSpace, speed);
     }
     // Create a new sick cell
     else {
         healthyCounter--;
-        sickCounter++;
-        personArr.at(index) = new SickPerson(newSpace, speed);
+        sickNumberTemp++;
+        cellArr.at(index) = new SickCell(newSpace, speed);
     }
     delete this;
 }
 
-void SickPerson::nextIteration(int index) {
+void SickCell::nextIteration(int index) {
     auto allNeighborCoor = getNeighbours(speed);
     auto newSpace = chooseRandomNeighbor(allNeighborCoor, location);
     int x = get<0>(location);
@@ -453,22 +514,63 @@ void SickPerson::nextIteration(int index) {
     // Freeing up current location, so that another cell can occupy it.
     freeCell(x, y);
     if (generation < X) {
-        personArr.at(index) = new SickPerson(newSpace, speed, generation + 1);
+        cellArr.at(index) = new SickCell(newSpace, speed, generation + 1);
     } else {
-        personArr.at(index) = new ImmunePerson(newSpace, speed);
-        sickCounter--;
+        cellArr.at(index) = new ImmuneCell(newSpace, speed);
+        sickNumberTemp--;
         immuneCounter++;
     }
     delete this;
 }
 
-void ImmunePerson::nextIteration(int index) {
+void ImmuneCell::nextIteration(int index) {
     auto allNeighborCoor = getNeighbours(speed);
     auto newSpace = chooseRandomNeighbor(allNeighborCoor, location);
     int x = get<0>(location);
     int y = get<1>(location);
     // Freeing up current location, so that another cell can occupy it.
     freeCell(x, y);
-    personArr.at(index) = new ImmunePerson(newSpace, speed);
+    cellArr.at(index) = new ImmuneCell(newSpace, speed);
     delete this;
+}
+
+
+
+/****************************************************************************
+ ****************************** Console Output ******************************
+ ****************************************************************************/
+
+/**
+ * Clears the console display
+ */
+void clear() {
+#if defined _WIN32
+    system("cls");
+#elif defined (__LINUX__) || defined(__gnu_linux__) || defined(__linux__)
+    system("clear");
+    //std::cout<< u8"\033[2J\033[1;1H"; //Using ANSI Escape Sequence
+#elif defined (__APPLE__)
+    system("clear");
+#endif
+}
+
+
+void printMatrix(matrixData adjMat[200][200]) {
+    int i = 0, j = 0;
+    //iterate over rows
+    for (;i < 200; ++i) {
+        //iterate over columns
+        for (j = 0; j < 200; ++j) {
+            if (!adjMat[i][j].isOccupied)
+                cout <<"_";
+            else if (adjMat[i][j].isOccupied && adjMat[i][j].isHealthy)
+               cout <<"\033[1;47;35mH\033[0m";
+            else if (adjMat[i][j].isOccupied && adjMat[i][j].isSick)
+                cout <<"\033[1;41;37mS\033[0m";
+            else if (adjMat[i][j].isOccupied && adjMat[i][j].isImmune)
+                cout << "\033[1;104;30mI\033[0m";
+        }
+        cout << endl;
+    }
+    //leave matrix on the screen for a couple of seconds
 }
