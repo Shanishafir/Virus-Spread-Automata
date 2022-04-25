@@ -134,16 +134,16 @@ void getParams() {
         //check if next character is newline
         if (cin.peek() == '\n') {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             N = 30000;
             break;
         } else if (!(std::cin >> N) || N > 40000 || N < 2) {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             cout << "Invalid input, please try again." << endl;     //error handling
         } else {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             break;
         }
     }
@@ -152,16 +152,16 @@ void getParams() {
         //check if next character is newline
         if (cin.peek() == '\n') {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             D = 0.002;
             break;
         } else if (!(std::cin >> D) || (D > 1.0 || D < 0.0)) {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             cout << "Invalid input, please try again." << endl;     //error handling
         } else {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             break;
         }
     }
@@ -170,16 +170,16 @@ void getParams() {
         //check if next character is newline
         if (cin.peek() == '\n') {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             R = 0.01;
             break;
         } else if (!(std::cin >> R) || (R > 1.0 || R < 0.0)) {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             cout << "Invalid input, please try again." << endl;     //error handling
         } else {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             break;
         }
     }
@@ -188,16 +188,16 @@ void getParams() {
         //check if next character is newline
         if (cin.peek() == '\n') {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             X = 2;
             break;
         } else if (!(std::cin >> X) || (X < 1)) {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             cout << "Invalid input, please try again." << endl;     //error handling
         } else {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             break;
         }
     }
@@ -206,16 +206,16 @@ void getParams() {
         //check if next character is newline
         if (cin.peek() == '\n') {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             P1 = 60;
             break;
         } else if (!(std::cin >> P1) || (P1 < 1 || P1 > 100)) {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             cout << "Invalid input, please try again." << endl;     //error handling
         } else {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             break;
         }
     }
@@ -224,16 +224,16 @@ void getParams() {
         //check if next character is newline
         if (cin.peek() == '\n') {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             P2 = 5;
             break;
         } else if (!(std::cin >> P2) || (P2 < 1 || P2 > 100)) {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             cout << "Invalid input, please try again." << endl;     //error handling
         } else {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             break;
         }
     }
@@ -243,24 +243,24 @@ void getParams() {
         //check if next character is newline
         if (cin.peek() == '\n') {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             T = 0.1 * N;
             break;
         } else if (!(std::cin >> x) || (x < 0.0 || x > 1.0)) {
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             cout << "Invalid input, please try again." << endl;     //error handling
         } else {
             T = x * N;
             cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(100, '\n');
             break;
         }
     }
     cout << endl << "Parameters initialized! press Enter to start the simulation.";
     if (cin.peek() == '\n') {
         cin.clear();
-        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        cin.ignore(100, '\n');
         return;
     }
 }
