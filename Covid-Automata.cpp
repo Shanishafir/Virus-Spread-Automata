@@ -126,7 +126,7 @@ void freeCell(int x, int y) {
 void getParams() {
     cout << "=========================================Viral Spread Automata=========================================" <<
     endl << endl << endl <<
-    "\033[1;41;37mNOTE: it is highly recommended to set the terminal font to 5 or lower after parameter setup,\n"
+    "\033[1;41;37mNOTE: it is highly recommended to set the terminal font to 5 or lower, and the terminal size to at least 201x201 after parameter setup,\n"
                     "in order to better see the whole simulation.\033[0m"  << endl << endl;
 
     while(true) {
@@ -184,7 +184,7 @@ void getParams() {
         }
     }
     while(true) {
-        cout << "Enter number of generation until a sick cell stops infecting [Default = 2]: ";
+        cout << "Enter number of generations until a sick cell stops infecting [Default = 2]: ";
         //check if next character is newline
         if (cin.peek() == '\n') {
             cin.clear();
