@@ -4,13 +4,13 @@
 
 
 
-int N; //10000
-double D = 0.05; //0.05
-double R = 0.01; //0.01
-int X = 4; //4
-int P1 = 40; //40      // Probability (percentage) of people getting sick when not taking care
-int P2 = 10; //10      // Probability (percentage) of people getting sick when taking care
-int T; // 0.1 * N      // P1 to P2 threshold
+int N;                 // Total number of occupied cells
+double D = 0.002;      // Fraction of starting sick cells
+double R = 0.01;       // Fraction of fast moving cells
+int X = 2;             // Generations until sick cells become immune
+int P1 = 60;           // Probability (percentage) of people getting sick when not taking care
+int P2 = 5;            // Probability (percentage) of people getting sick when taking care
+int T;                 // P1 to P2 threshold - 0.1 * N Default
 
 int sickNumberTemp;    // Will store mid-iteration sick number of each iteration.
 int sickCounter = 0;
