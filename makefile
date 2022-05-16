@@ -1,5 +1,5 @@
 main:
-	g++ -std=c++11 Covid-Automata.cpp Covid-Automata.h -o viral-automata.out
+	g++ -std=c++11 Covid-Automaton.cpp Covid-Automaton.h -o viral-automaton.out
 clean:
-	rm Covid-Automata.out results.csv
+	rm viral-automaton.out results.csv
 
