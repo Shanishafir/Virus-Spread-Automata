@@ -1,7 +1,9 @@
 # Virus Spread Simulation Cellular Automaton
 A program simulating a viral outbreak and resembling [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life/) written in C++.
-The program allows for setting up various variables, such as starting number of cells, infection rates, fast travelling cells etc.
-There's a simple CLI UI for setting up variables and graphical display of the simulation
+
+The automaton allows for setting up various variables, such as starting number of cells, infection rates, fast travelling cells etc.
+
+The program implements a simple CLI UI for graphical display of the simulation.
 
 ### Prerequisites
   - g++/c++ compiler
